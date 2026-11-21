@@ -2,7 +2,7 @@
 
 > **Suggested GitHub Repository Name:** `ideal-gas-kinetic-theory-lab`
 >
-> **Live Demo:** `[Insert Your GitHub Pages Link Here]`
+> **Live Demo:** [zaindev210.github.io/ideal-gas-kinetic-theory-lab](https://zaindev210.github.io/ideal-gas-kinetic-theory-lab/)
 
 An interactive computational physics and statistical mechanics simulation built in pure JavaScript and HTML5 Canvas for **PECTAA Inter Part-1 (Class 11) Physics — Chapter 6 (Heat & Thermodynamics)** demonstrations. Designed to connect microscopic elastic molecular collisions with macroscopic thermodynamic laws, this simulator features a movable piston chamber, live $P\text{–}V$ indicator curves (Isothermal vs. Adiabatic), and a real-time Maxwell–Boltzmann speed distribution plot.
 
