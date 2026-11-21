@@ -1,0 +1,2392 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Computational Physics Modeling: Ideal Gas &amp; Kinetic Theory Simulator
+    </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+              mono: ["JetBrains Mono", "monospace"],
+            },
+            colors: {
+              obsidian: {
+                950: "#090b0e",
+                900: "#101319",
+                850: "#151a22",
+                800: "#1b222c",
+                700: "#273140",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      input[type="range"] {
+        -webkit-appearance: none;
+        appearance: none;
+        background: transparent;
+        cursor: pointer;
+      }
+      input[type="range"]::-webkit-slider-runnable-track {
+        height: 5px;
+        border-radius: 999px;
+        background: #273140;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: #38bdf8;
+        border: 2px solid #090b0e;
+        margin-top: -5px;
+        box-shadow: 0 0 8px rgba(56, 189, 248, 0.55);
+        transition:
+          transform 0.12s ease,
+          background-color 0.12s ease;
+      }
+      input[type="range"]::-webkit-slider-thumb:hover {
+        transform: scale(1.15);
+        background: #7dd3fc;
+      }
+      input[type="range"]::-moz-range-track {
+        height: 5px;
+        border-radius: 999px;
+        background: #273140;
+      }
+      input[type="range"]::-moz-range-thumb {
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: #38bdf8;
+        border: 2px solid #090b0e;
+      }
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #101319;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #273140;
+        border-radius: 3px;
+      }
+      canvas {
+        touch-action: none;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-obsidian-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col selection:bg-sky-500/30 selection:text-sky-200"
+  >
+    <!-- Top Scientific Header Banner -->
+    <header
+      class="bg-obsidian-900 border-b border-obsidian-700/80 px-4 py-3 sm:px-6"
+    >
+      <div
+        class="max-w-[1640px] mx-auto flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2.5"
+      >
+        <div>
+          <div class="flex flex-wrap items-center gap-2 mb-1">
+            <span
+              class="px-2 py-0.5 text-[11px] font-mono font-semibold tracking-wider uppercase rounded bg-obsidian-800 text-sky-300 border border-obsidian-700"
+            >
+              PECTAA Inter Part-1 • Ch. 6
+            </span>
+            <span class="text-xs font-mono text-slate-300"
+              >Heat &amp; Thermodynamics Lab</span
+            >
+            <span class="hidden sm:inline text-slate-600">•</span>
+            <span class="hidden sm:inline text-xs font-mono text-emerald-400"
+              >PV = Nk_BT &nbsp;|&nbsp; Q = ΔU + W</span
+            >
+          </div>
+          <h1
+            class="text-base sm:text-lg md:text-xl font-bold tracking-tight text-white"
+          >
+            Computational Physics Modeling: Ideal Gas &amp; Kinetic Theory
+            Simulator
+          </h1>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <div
+            class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-obsidian-850 border border-obsidian-700 text-xs font-mono"
+          >
+            <span
+              id="statusDot"
+              class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"
+            ></span>
+            <span id="statusText" class="text-slate-300"
+              >KINETIC ENGINE ACTIVE</span
+            >
+          </div>
+          <button
+            id="btnTheoryModal"
+            type="button"
+            class="px-3.5 py-1.5 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 text-sky-200 border border-sky-500/40 text-xs font-semibold transition flex items-center gap-1.5 shadow-sm"
+          >
+            <svg
+              class="w-4 h-4 text-sky-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+              />
+            </svg>
+            <span>Formulas (PECTAA)</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace Grid -->
+    <main
+      class="flex-1 max-w-[1640px] w-full mx-auto p-3 sm:p-4 lg:p-5 grid grid-cols-1 lg:grid-cols-12 gap-4"
+    >
+      <!-- Left / Center Gas Chamber, P-V Diagram & Maxwell-Boltzmann Column (8 cols) -->
+      <section class="lg:col-span-8 flex flex-col gap-3 min-w-0">
+        <!-- Playback, Heat Pulse & Visual Overlays Toolbar -->
+        <div
+          class="bg-obsidian-900 border border-obsidian-700/80 rounded-xl p-2.5 flex flex-wrap items-center justify-between gap-2"
+        >
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button
+              id="btnPlayPause"
+              type="button"
+              class="px-3.5 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 active:bg-sky-600 text-obsidian-950 font-semibold text-xs sm:text-sm transition shadow-lg shadow-sky-500/20 flex items-center gap-1.5"
+            >
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              <span id="labelPlayPause">Pause</span>
+            </button>
+
+            <button
+              id="btnStep"
+              type="button"
+              title="Advance 1 Frame"
+              class="px-2.5 py-2 rounded-lg bg-obsidian-800 hover:bg-obsidian-700 text-slate-200 border border-obsidian-700 font-medium text-xs transition flex items-center gap-1"
+            >
+              <svg
+                class="w-4 h-4 text-emerald-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 5l7 7-7 7M5 5l7 7-7 7"
+                />
+              </svg>
+              <span>Step</span>
+            </button>
+
+            <button
+              id="btnHeat"
+              type="button"
+              class="px-2.5 py-2 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/40 font-semibold text-xs transition"
+            >
+              +Heat (+Q)
+            </button>
+
+            <button
+              id="btnCool"
+              type="button"
+              class="px-2.5 py-2 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/40 font-semibold text-xs transition"
+            >
+              −Cool (−Q)
+            </button>
+          </div>
+
+          <!-- Visual Overlay Toggles -->
+          <div
+            class="flex flex-wrap items-center gap-3 text-xs font-medium px-1"
+          >
+            <label
+              class="inline-flex items-center gap-1.5 cursor-pointer select-none text-slate-300"
+            >
+              <input
+                id="chkVectors"
+                type="checkbox"
+                class="w-3.5 h-3.5 rounded bg-obsidian-800 border-obsidian-600 text-sky-400"
+              />
+              <span>Velocity v⃗</span>
+            </label>
+            <label
+              class="inline-flex items-center gap-1.5 cursor-pointer select-none text-slate-300"
+            >
+              <input
+                id="chkTracer"
+                type="checkbox"
+                checked
+                class="w-3.5 h-3.5 rounded bg-obsidian-800 border-obsidian-600 text-amber-400"
+              />
+              <span>Tracer Path</span>
+            </label>
+            <label
+              class="inline-flex items-center gap-1.5 cursor-pointer select-none text-slate-300"
+            >
+              <input
+                id="chkGrid"
+                type="checkbox"
+                class="w-3.5 h-3.5 rounded bg-obsidian-800 border-obsidian-600 text-emerald-400"
+              />
+              <span>Hash Grid</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Main Piston Cylinder & Molecular Collision Canvas -->
+        <div
+          class="relative w-full aspect-[16/9] max-h-[430px] bg-obsidian-900 border border-obsidian-700/80 rounded-xl overflow-hidden shadow-2xl"
+        >
+          <canvas id="chamberCanvas" class="w-full h-full block"></canvas>
+
+          <!-- Top-Left Process & FPS HUD -->
+          <div
+            class="absolute top-3 left-3 bg-obsidian-950/80 backdrop-blur-md border border-obsidian-700/80 rounded-lg px-2.5 py-1.5 text-[11px] font-mono text-slate-300 pointer-events-none select-none flex items-center gap-2.5"
+          >
+            <span
+              >Process:
+              <strong id="hudProcessName" class="text-sky-300"
+                >Adiabatic (Q = 0)</strong
+              ></span
+            >
+            <span class="text-slate-600">|</span>
+            <span id="hudFps" class="text-emerald-400">60 FPS</span>
+          </div>
+
+          <!-- Top-Right Speed / Species Color Legend -->
+          <div
+            class="absolute top-3 right-3 bg-obsidian-950/80 backdrop-blur-md border border-obsidian-700/80 rounded-lg p-2 text-[10px] font-mono pointer-events-none select-none w-36"
+          >
+            <div
+              id="legendSpeciesTitle"
+              class="text-slate-300 font-semibold mb-1 text-center"
+            >
+              Kinetic Speed |v⃗|
+            </div>
+            <div
+              id="legendSpeedBar"
+              class="h-2 w-full rounded bg-gradient-to-r from-[#38bdf8] via-[#34d399] via-[#fbbf24] to-[#f43f5e]"
+            ></div>
+            <div
+              id="legendSpeedLabels"
+              class="flex justify-between text-slate-400 mt-1"
+            >
+              <span>Slow</span>
+              <span>v_rms</span>
+              <span>Fast</span>
+            </div>
+          </div>
+
+          <!-- Bottom-Left Piston Interaction Hint -->
+          <div
+            class="absolute bottom-2.5 left-3 bg-obsidian-950/75 backdrop-blur-sm border border-obsidian-800 rounded px-2.5 py-1 text-[10px] font-mono text-slate-400 pointer-events-none select-none"
+          >
+            Drag Movable Piston Handle Left/Right to Compress or Expand Gas
+          </div>
+
+          <!-- Toast Notification Pill -->
+          <div
+            id="toastPill"
+            class="hidden absolute bottom-2.5 right-3 bg-obsidian-850/95 border border-sky-500/40 text-sky-200 px-3 py-1.5 rounded-full text-xs font-medium shadow-xl"
+          >
+            Notice
+          </div>
+        </div>
+
+        <!-- Bottom Row: Macroscopic Telemetry, Maxwell-Boltzmann & P-V Indicator Diagram -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+          <!-- Macroscopic State Variables Card (12 cols) -->
+          <div
+            class="md:col-span-12 bg-obsidian-900 border border-obsidian-700/80 rounded-xl p-3.5 flex flex-col justify-between"
+          >
+            <div class="flex items-center justify-between mb-2">
+              <h2
+                class="text-xs font-semibold uppercase tracking-wider text-slate-400"
+              >
+                Macroscopic Gas State (PV = Nk_BT)
+              </h2>
+              <span class="text-[11px] font-mono text-emerald-400"
+                >PV / Nk_BT = <strong id="telGasRatio">1.00</strong></span
+              >
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono">
+              <div
+                class="bg-obsidian-850 border border-obsidian-800 rounded-lg p-2"
+              >
+                <div class="text-[10px] text-rose-400">Pressure (P)</div>
+                <div id="telPressure" class="text-sm font-bold text-rose-300">
+                  200.0 kPa
+                </div>
+              </div>
+              <div
+                class="bg-obsidian-850 border border-obsidian-800 rounded-lg p-2"
+              >
+                <div class="text-[10px] text-sky-400">Volume (V)</div>
+                <div id="telVolume" class="text-sm font-bold text-sky-300">
+                  25.0 L
+                </div>
+              </div>
+              <div
+                class="bg-obsidian-850 border border-obsidian-800 rounded-lg p-2"
+              >
+                <div class="text-[10px] text-amber-400">Temp (T)</div>
+                <div id="telTemp" class="text-sm font-bold text-amber-300">
+                  300 K
+                </div>
+              </div>
+              <div
+                class="bg-obsidian-850 border border-obsidian-800 rounded-lg p-2"
+              >
+                <div class="text-[10px] text-emerald-400">Speed (v_rms)</div>
+                <div id="telVrms" class="text-sm font-bold text-emerald-300">
+                  498 m/s
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="mt-2.5 pt-2 border-t border-obsidian-800/80 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-slate-400"
+            >
+              <span
+                >Mean KE:
+                <strong id="telMeanKe" class="text-slate-200"
+                  >6.21 × 10⁻²¹ J</strong
+                ></span
+              >
+              <span
+                >Wall Collisions:
+                <strong id="telCollisions" class="text-sky-300"
+                  >0 /s</strong
+                ></span
+              >
+            </div>
+          </div>
+
+          <!-- Live P-V Indicator Diagram: Isotherm vs Adiabatic Curves (6 cols) -->
+          <div
+            class="md:col-span-6 bg-obsidian-900 border border-obsidian-700/80 rounded-xl p-3.5 flex flex-col justify-between"
+          >
+            <div class="flex items-center justify-between mb-1.5 gap-1">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                <h2
+                  class="text-xs font-semibold uppercase tracking-wider text-slate-300"
+                >
+                  P–V Indicator Diagram
+                </h2>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-[10px]">
+                <span class="text-emerald-400">┈ Isotherm</span>
+                <span class="text-rose-400">┈ Adiabatic</span>
+                <button
+                  id="btnClearPvTrail"
+                  type="button"
+                  class="text-slate-400 hover:text-sky-300 underline ml-1"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            <div
+              class="relative w-full h-28 bg-obsidian-950 border border-obsidian-800 rounded-lg overflow-hidden"
+            >
+              <canvas id="pvCanvas" class="w-full h-full block"></canvas>
+            </div>
+          </div>
+
+          <!-- Live Maxwell-Boltzmann Speed Distribution Histogram (6 cols) -->
+          <div
+            class="md:col-span-6 bg-obsidian-900 border border-obsidian-700/80 rounded-xl p-3.5 flex flex-col justify-between"
+          >
+            <div class="flex items-center justify-between mb-1.5">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                <h2
+                  class="text-xs font-semibold uppercase tracking-wider text-slate-300"
+                >
+                  Maxwell-Boltzmann Speed
+                </h2>
+              </div>
+              <div class="flex items-center gap-2 font-mono text-[10px]">
+                <span class="text-sky-300">▮ Sim</span>
+                <span class="text-amber-300">― Theory</span>
+              </div>
+            </div>
+
+            <div
+              class="relative w-full h-28 bg-obsidian-950 border border-obsidian-800 rounded-lg overflow-hidden"
+            >
+              <canvas id="histCanvas" class="w-full h-full block"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Control Console (4 cols) -->
+      <aside class="lg:col-span-4 flex flex-col gap-3.5">
+        <!-- 1. Thermodynamic Processes & Lab Presets -->
+        <div
+          class="bg-obsidian-900 border border-obsidian-700/80 rounded-xl p-3.5 space-y-2.5"
+        >
+          <div class="flex items-center justify-between">
+            <h2
+              class="text-xs font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                />
+              </svg>
+              <span>Thermodynamic Experiments</span>
+            </h2>
+            <span class="text-[10px] font-mono text-slate-400">6 Modes</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-1.5">
+            <button
+              type="button"
+              data-preset="adiabatic"
+              class="preset-btn text-left p-2 rounded-lg bg-sky-500/15 border border-sky-500/50 text-sky-200 transition"
+            >
+              <div class="text-xs font-semibold">1. Adiabatic Piston</div>
+              <div class="text-[10px] text-slate-400">Q = 0, ΔU = −W</div>
+            </button>
+
+            <button
+              type="button"
+              data-preset="boyle"
+              class="preset-btn text-left p-2 rounded-lg bg-obsidian-850 hover:bg-obsidian-800 border border-obsidian-700 text-slate-200 transition"
+            >
+              <div class="text-xs font-semibold">2. Boyle's Law</div>
+              <div class="text-[10px] text-slate-400">
+                Isothermal (T = const)
+              </div>
+            </button>
+
+            <button
+              type="button"
+              data-preset="charles"
+              class="preset-btn text-left p-2 rounded-lg bg-obsidian-850 hover:bg-obsidian-800 border border-obsidian-700 text-slate-200 transition"
+            >
+              <div class="text-xs font-semibold">3. Charles's Law</div>
+              <div class="text-[10px] text-slate-400">Isobaric (P = const)</div>
+            </button>
+
+            <button
+              type="button"
+              data-preset="gayLussac"
+              class="preset-btn text-left p-2 rounded-lg bg-obsidian-850 hover:bg-obsidian-800 border border-obsidian-700 text-slate-200 transition"
+            >
+              <div class="text-xs font-semibold">4. Gay-Lussac's Law</div>
+              <div class="text-[10px] text-slate-400">
+                Isochoric (V = const)
+              </div>
+            </button>
+
+            <button
+              type="button"
+              data-preset="mixture"
+              class="preset-btn text-left p-2 rounded-lg bg-obsidian-850 hover:bg-obsidian-800 border border-obsidian-700 text-slate-200 transition"
+            >
+              <div class="text-xs font-semibold">5. Light &amp; Heavy Gas</div>
+              <div class="text-[10px] text-slate-400">
+                Equipartition &amp; v_rms
+              </div>
+            </button>
+
+            <button
+              type="button"
+              data-preset="brownian"
+              class="preset-btn text-left p-2 rounded-lg bg-obsidian-850 hover:bg-obsidian-800 border border-obsidian-700 text-slate-200 transition"
+            >
+              <div class="text-xs font-semibold">6. Brownian Motion</div>
+              <div class="text-[10px] text-slate-400">
+                Random Walk Collisions
+              </div>
+            </button>
+          </div>
+
+          <p
+            id="presetDescription"
+            class="text-[11px] text-slate-300 bg-obsidian-850/90 border border-obsidian-800 rounded-lg p-2 leading-relaxed"
+          >
+            Insulated walls (Q = 0). Compressing the piston does positive work
+            on the gas, accelerating molecules and raising Temperature (T) and
+            Pressure (P).
+          </p>
+        </div>
+
+        <!-- 2. State Variables & Molecular Parameters -->
+        <div
+          class="bg-obsidian-900 border border-obsidian-700/80 rounded-xl p-3.5 space-y-3.5"
+        >
+          <div
+            class="flex items-center justify-between border-b border-obsidian-800 pb-2"
+          >
+            <h2
+              class="text-xs font-bold uppercase tracking-wider text-slate-300"
+            >
+              Chamber &amp; Molecular Controls
+            </h2>
+            <button
+              id="btnResetEquil"
+              type="button"
+              class="text-[11px] font-mono text-sky-400 hover:text-sky-300 underline"
+            >
+              Reset STP
+            </button>
+          </div>
+
+          <!-- Chamber Volume V -->
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs">
+              <label for="sliderVolume" class="text-slate-300 font-medium"
+                >Chamber Volume (<span class="font-mono text-sky-300">V</span
+                >)</label
+              >
+              <span id="valVolume" class="font-mono text-sky-300 font-semibold"
+                >25.0 L</span
+              >
+            </div>
+            <input
+              id="sliderVolume"
+              type="range"
+              min="10.0"
+              max="45.0"
+              step="0.5"
+              value="25.0"
+              class="w-full"
+            />
+          </div>
+
+          <!-- Thermal Bath Temperature T -->
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs">
+              <label for="sliderTemp" class="text-slate-300 font-medium"
+                >Bath Temperature (<span class="font-mono text-amber-300"
+                  >T</span
+                >)</label
+              >
+              <span id="valTemp" class="font-mono text-amber-300 font-semibold"
+                >300 K</span
+              >
+            </div>
+            <input
+              id="sliderTemp"
+              type="range"
+              min="100"
+              max="900"
+              step="10"
+              value="300"
+              class="w-full"
+            />
+          </div>
+
+          <!-- Particle Count N -->
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs">
+              <label for="sliderCount" class="text-slate-300 font-medium"
+                >Molecule Count (<span class="font-mono text-emerald-300"
+                  >N</span
+                >)</label
+              >
+              <span
+                id="valCount"
+                class="font-mono text-emerald-300 font-semibold"
+                >200</span
+              >
+            </div>
+            <input
+              id="sliderCount"
+              type="range"
+              min="40"
+              max="420"
+              step="10"
+              value="200"
+              class="w-full"
+            />
+          </div>
+
+          <!-- Molar Mass M -->
+          <div class="space-y-1">
+            <div class="flex justify-between text-xs">
+              <label for="sliderMass" class="text-slate-300 font-medium"
+                >Molar Mass (<span class="font-mono text-purple-300">M</span
+                >)</label
+              >
+              <span id="valMass" class="font-mono text-purple-300 font-semibold"
+                >28 g/mol (N₂)</span
+              >
+            </div>
+            <input
+              id="sliderMass"
+              type="range"
+              min="4"
+              max="84"
+              step="4"
+              value="28"
+              class="w-full"
+            />
+          </div>
+
+          <!-- Thermostat / Thermal Wall Coupling Toggle -->
+          <div
+            class="flex items-center justify-between pt-1.5 border-t border-obsidian-800"
+          >
+            <div>
+              <span class="text-xs font-medium text-slate-200 block"
+                >Isothermal Heat Bath</span
+              >
+              <span class="text-[10px] text-slate-400"
+                >Locks gas temperature to Bath T</span
+              >
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input id="chkThermostat" type="checkbox" class="sr-only peer" />
+              <div
+                class="w-9 h-5 bg-obsidian-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-300 after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"
+              ></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 3. PECTAA College Presentation Tip Card -->
+        <div
+          class="bg-obsidian-900/90 border border-sky-500/25 rounded-xl p-3.5 text-xs space-y-1.5"
+        >
+          <div class="flex items-center gap-1.5 text-sky-400 font-semibold">
+            <svg
+              class="w-4 h-4 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span>PECTAA Physics Lab Observation</span>
+          </div>
+          <p class="text-slate-300 leading-relaxed">
+            Select <strong>5. Light &amp; Heavy Gas</strong> to observe two
+            gases at the same temperature
+            <span class="font-mono text-amber-300">T</span>: both share equal
+            average kinetic energy (<span class="font-mono text-emerald-300"
+              >⟨Eₖ⟩ = ³⁄₂ k_BT</span
+            >), while lighter molecules move faster (<span
+              class="font-mono text-sky-300"
+              >v_rms ∝ 1/√M</span
+            >).
+          </p>
+        </div>
+      </aside>
+    </main>
+
+    <!-- PECTAA Syllabus Formulas & Computational Engine Modal -->
+    <div
+      id="theoryModal"
+      class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-obsidian-900 border border-obsidian-700 rounded-2xl max-w-2xl w-full max-h-[88vh] overflow-y-auto p-5 sm:p-6 shadow-2xl space-y-4"
+      >
+        <div
+          class="flex items-center justify-between border-b border-obsidian-800 pb-3"
+        >
+          <div>
+            <span
+              class="text-[10px] font-mono uppercase tracking-wider text-sky-400"
+              >PECTAA Inter Part-1 (Class 11) • Chapter 6</span
+            >
+            <h3 class="text-lg font-bold text-white">
+              Heat &amp; Thermodynamics — Core Formulas
+            </h3>
+          </div>
+          <button
+            id="closeTheoryModal"
+            type="button"
+            class="p-1.5 rounded-lg bg-obsidian-800 hover:bg-obsidian-700 text-slate-300"
+            aria-label="Close Formulas Modal"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Primary Tier: Concise PECTAA Syllabus Equations -->
+        <div class="space-y-2.5">
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            Key kinetic theory and thermodynamic equations demonstrated in this
+            gas chamber (Inter Part-1, Ch. 6 — Heat and Thermodynamics):
+          </p>
+
+          <div
+            class="bg-obsidian-950 border border-obsidian-800 rounded-xl divide-y divide-obsidian-800/80 font-mono text-xs sm:text-[13px]"
+          >
+            <div
+              class="p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1"
+            >
+              <span class="text-slate-400 font-sans text-xs"
+                >1. Ideal Gas Equation of State</span
+              >
+              <span class="text-sky-300 font-semibold">PV = nRT = Nk_BT</span>
+            </div>
+
+            <div
+              class="p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1"
+            >
+              <span class="text-slate-400 font-sans text-xs"
+                >2. Kinetic Pressure of an Ideal Gas</span
+              >
+              <span class="text-rose-300 font-semibold"
+                >P = ⅓ ρ ⟨v²⟩ = (N m ⟨v²⟩) / 3V</span
+              >
+            </div>
+
+            <div
+              class="p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1"
+            >
+              <span class="text-slate-400 font-sans text-xs"
+                >3. Translational Kinetic Energy &amp; Temperature</span
+              >
+              <span class="text-emerald-300 font-semibold"
+                >⟨Eₖ⟩ = ½ m ⟨v²⟩ = ³⁄₂ k_BT</span
+              >
+            </div>
+
+            <div
+              class="p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1"
+            >
+              <span class="text-slate-400 font-sans text-xs"
+                >4. Root-Mean-Square (RMS) Molecular Speed</span
+              >
+              <span class="text-amber-300 font-semibold"
+                >v_rms = √(3k_BT / m) = √(3RT / M)</span
+              >
+            </div>
+
+            <div
+              class="p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1"
+            >
+              <span class="text-slate-400 font-sans text-xs"
+                >5. First Law of Thermodynamics</span
+              >
+              <span class="text-purple-300 font-semibold"
+                >Q = ΔU + W &nbsp;&nbsp;(W = PΔV)</span
+              >
+            </div>
+
+            <div
+              class="p-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1"
+            >
+              <span class="text-slate-400 font-sans text-xs"
+                >6. Isothermal vs. Adiabatic Curves</span
+              >
+              <span class="text-emerald-300 font-semibold"
+                >PV = const &nbsp;|&nbsp; PVᵞ = const</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Secondary Tier: Collapsible Computational Physics Drawer -->
+        <details
+          class="group bg-obsidian-950/70 border border-obsidian-800 rounded-xl overflow-hidden"
+        >
+          <summary
+            class="cursor-pointer select-none px-4 py-2.5 flex items-center justify-between text-xs font-mono text-slate-300 hover:bg-obsidian-850 transition"
+          >
+            <span class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+              <span class="font-semibold"
+                >Computational Engine: Spatial Hash Grid &amp; Elastic
+                Collisions</span
+              >
+            </span>
+            <span
+              class="text-slate-400 group-open:rotate-180 transition-transform"
+              >▼</span
+            >
+          </summary>
+          <div
+            class="px-4 pb-3.5 pt-2 border-t border-obsidian-800/80 space-y-2 text-xs text-slate-300"
+          >
+            <p class="leading-relaxed text-slate-400">
+              Pairwise collision checks scale as
+              <span class="font-mono text-rose-300">O(N²)</span>. To maintain 60
+              FPS with hundreds of colliding molecules, the chamber is
+              partitioned into a uniform
+              <span class="font-mono text-sky-300">Spatial Hash Grid</span>
+              (<span class="font-mono text-emerald-300">O(N)</span> expected
+              complexity) where each particle tests collisions only against its
+              3×3 neighborhood cells:
+            </p>
+            <div
+              class="bg-obsidian-900 border border-obsidian-800 rounded-lg p-3 font-mono text-[11px] space-y-1.5 overflow-x-auto"
+            >
+              <div class="text-slate-400">
+                // Elastic Impulse Resolution Along Collision Normal n̂
+              </div>
+              <div class="text-sky-300">
+                j = −2 · ((v₂ − v₁) · n̂) / (1/m₁ + 1/m₂)
+              </div>
+              <div class="text-emerald-300">
+                v₁′ = v₁ − (j / m₁) · n̂ &nbsp;|&nbsp; v₂′ = v₂ + (j / m₂) · n̂
+              </div>
+              <div class="text-amber-300">P_wall = ∑ Δp_⊥ / (A_wall · Δt)</div>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- Kinetic Theory Physics Engine, Spatial Hash Grid & Distribution Renderer -->
+    <script>
+      /**
+       * ============================================================================
+       * 1. SPATIAL HASH GRID FOR O(N) BROAD-PHASE COLLISION DETECTION
+       * ============================================================================
+       */
+      class SpatialHashGrid {
+        constructor(cellSize) {
+          this.cellSize = cellSize;
+          this.buckets = new Map();
+        }
+
+        clear() {
+          this.buckets.clear();
+        }
+
+        _key(cx, cy) {
+          return (cx << 16) ^ cy;
+        }
+
+        insert(particle) {
+          const cx = Math.floor(particle.x / this.cellSize);
+          const cy = Math.floor(particle.y / this.cellSize);
+          const k = this._key(cx, cy);
+          let list = this.buckets.get(k);
+          if (!list) {
+            list = [];
+            this.buckets.set(k, list);
+          }
+          list.push(particle);
+        }
+
+        queryNeighbors(particle, callback) {
+          const cx = Math.floor(particle.x / this.cellSize);
+          const cy = Math.floor(particle.y / this.cellSize);
+          for (let dx = -1; dx <= 1; dx++) {
+            for (let dy = -1; dy <= 1; dy++) {
+              const list = this.buckets.get(this._key(cx + dx, cy + dy));
+              if (!list) continue;
+              for (let i = 0; i < list.length; i++) {
+                const other = list[i];
+                if (other.id > particle.id) {
+                  callback(particle, other);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      /**
+       * ============================================================================
+       * 2. IDEAL GAS & KINETIC THEORY SIMULATION ENGINE
+       * ============================================================================
+       */
+      const GasSim = {
+        // Chamber geometry in logical simulation coordinates (600 x 360)
+        boxLeft: 28,
+        boxTop: 28,
+        boxBottom: 332,
+        minPistonX: 170,
+        maxPistonX: 568,
+        pistonX: 390,
+        prevPistonX: 390,
+        pistonVelX: 0,
+
+        // Thermodynamic State Parameters
+        mode: "adiabatic", // 'adiabatic' | 'boyle' | 'charles' | 'gayLussac' | 'mixture' | 'brownian'
+        targetTemp: 300, // Kelvin (100 - 900 K)
+        targetVolume: 25.0, // Liters (10 - 45 L)
+        targetPressure: 200.0, // kPa (used in isobaric Charles's law mode)
+        particleCount: 200,
+        molarMass: 28, // g/mol (default N2 = 28)
+        thermostatOn: false,
+
+        // Particles & Spatial Hash
+        particles: [],
+        grid: new SpatialHashGrid(24),
+        tracerHistory: [],
+        pvHistory: [],
+        pvAnchor: { V: 25.0, P: 200.0 },
+
+        // Macroscopic Measured Telemetry
+        measuredTemp: 300,
+        measuredPressure: 200,
+
+        // Macroscopic Measured Telemetry
+        measuredTemp: 300,
+        measuredPressure: 200,
+        measuredVrms: 498,
+        wallImpulseAccum: 0,
+        wallCollisionsCount: 0,
+        collisionsPerSec: 0,
+        sampleTimer: 0,
+
+        // Velocity scaling factor: maps physical m/s to logical px/s
+        // At T=300K, M=28g/mol: v_rms = sqrt(3 * 8.314 * 300 / 0.028) ≈ 517 m/s -> ~210 px/s
+        VEL_TO_PX: 0.405,
+
+        /** Converts Volume (10..45 L) <-> Piston X coordinate */
+        volumeToPistonX(vol) {
+          const norm = (vol - 10.0) / 35.0;
+          return this.minPistonX + norm * (this.maxPistonX - this.minPistonX);
+        },
+
+        pistonXToVolume(px) {
+          const norm =
+            (px - this.minPistonX) / (this.maxPistonX - this.minPistonX);
+          return 10.0 + Math.max(0, Math.min(1, norm)) * 35.0;
+        },
+
+        /** Computes theoretical 3D textbook v_rms = sqrt(3RT / M) in m/s */
+        computeTheoreticalVrms(tempK, molarMassG) {
+          const R = 8.31446;
+          return Math.sqrt((3 * R * tempK) / (molarMassG * 0.001));
+        },
+
+        /** Samples a 2D Maxwell-Boltzmann speed using Box-Muller normal components */
+        sampleMaxwellSpeed(tempK, molarMassG) {
+          const vRmsPhys = this.computeTheoreticalVrms(tempK, molarMassG);
+          // In 2D, <vx^2 + vy^2> = 2 * sigma^2 = v_rms^2 => sigma = v_rms / sqrt(2)
+          const sigma = (vRmsPhys * this.VEL_TO_PX) / Math.SQRT2;
+          const u1 = Math.max(1e-7, Math.random());
+          const u2 = Math.random();
+          const mag = Math.sqrt(-2.0 * Math.log(u1)) * sigma;
+          const theta = 2.0 * Math.PI * u2;
+          return {
+            vx: mag * Math.cos(theta),
+            vy: mag * Math.sin(theta),
+          };
+        },
+
+        /** Populates or resizes the molecular ensemble */
+        spawnParticles(count, tempK, molarMassG, mode = this.mode) {
+          this.particles = [];
+          this.tracerHistory = [];
+          this.pvHistory = [];
+          this.pistonX = this.volumeToPistonX(this.targetVolume);
+          this.prevPistonX = this.pistonX;
+          this.pistonVelX = 0;
+
+          for (let i = 0; i < count; i++) {
+            let species = "normal";
+            let mass = molarMassG;
+            let radius = 4.2;
+
+            if (mode === "mixture") {
+              // 50% Light Gas (Helium, 4 g/mol) vs 50% Heavy Gas (Argon, 40 g/mol)
+              if (i % 2 === 0) {
+                species = "light";
+                mass = 4;
+                radius = 3.4;
+              } else {
+                species = "heavy";
+                mass = 40;
+                radius = 5.2;
+              }
+            } else if (mode === "brownian" && i === 0) {
+              // Massive Pollen / Smoke Tracer Particle
+              species = "pollen";
+              mass = 360;
+              radius = 12.5;
+            }
+
+            const vel =
+              mode === "brownian" && i === 0
+                ? { vx: 0, vy: 0 }
+                : this.sampleMaxwellSpeed(tempK, mass);
+
+            const pad = radius + 4;
+            const x =
+              this.boxLeft +
+              pad +
+              Math.random() *
+                Math.max(20, this.pistonX - this.boxLeft - 2 * pad);
+            const y =
+              this.boxTop +
+              pad +
+              Math.random() * (this.boxBottom - this.boxTop - 2 * pad);
+
+            this.particles.push({
+              id: i,
+              x,
+              y,
+              vx: vel.vx,
+              vy: vel.vy,
+              mass,
+              radius,
+              species,
+              isTracer: i === 0,
+            });
+          }
+
+          this.measuredTemp = tempK;
+          this.measuredPressure = this.computeIdealPressure(
+            count,
+            tempK,
+            this.targetVolume,
+          );
+          this.measuredVrms = this.computeTheoreticalVrms(tempK, molarMassG);
+          this.wallImpulseAccum = 0;
+          this.wallCollisionsCount = 0;
+          this.sampleTimer = 0;
+          this.resetPvReference();
+        },
+
+        /** Anchors the theoretical Isotherm (PV = const) and Adiabatic (PV^gamma = const) reference curves */
+        resetPvReference() {
+          const V = this.pistonXToVolume(this.pistonX);
+          const P = Math.max(10, this.measuredPressure);
+          this.pvAnchor = { V, P };
+          this.pvHistory = [{ V, P }];
+        },
+
+        /** Records current (V, P) state onto the P-V indicator trace */
+        recordPvPoint() {
+          const V = this.pistonXToVolume(this.pistonX);
+          const P = this.measuredPressure;
+          const last = this.pvHistory[this.pvHistory.length - 1];
+          if (
+            !last ||
+            Math.hypot((V - last.V) / 35, (P - last.P) / 600) > 0.008
+          ) {
+            this.pvHistory.push({ V, P });
+            if (this.pvHistory.length > 220) {
+              this.pvHistory.shift();
+            }
+          }
+        },
+
+        /** Adjusts particle count smoothly without losing current state */
+        setParticleCount(newCount) {
+          const diff = newCount - this.particles.length;
+          if (diff > 0) {
+            for (let k = 0; k < diff; k++) {
+              const idx = this.particles.length;
+              let species = "normal";
+              let mass = this.molarMass;
+              let radius = 4.2;
+              if (this.mode === "mixture") {
+                species = idx % 2 === 0 ? "light" : "heavy";
+                mass = species === "light" ? 4 : 40;
+                radius = species === "light" ? 3.4 : 5.2;
+              }
+              const vel = this.sampleMaxwellSpeed(this.measuredTemp, mass);
+              const pad = radius + 4;
+              const x =
+                this.boxLeft +
+                pad +
+                Math.random() *
+                  Math.max(15, this.pistonX - this.boxLeft - 2 * pad);
+              const y =
+                this.boxTop +
+                pad +
+                Math.random() * (this.boxBottom - this.boxTop - 2 * pad);
+              this.particles.push({
+                id: idx,
+                x,
+                y,
+                vx: vel.vx,
+                vy: vel.vy,
+                mass,
+                radius,
+                species,
+                isTracer: false,
+              });
+            }
+          } else if (diff < 0) {
+            this.particles.length = Math.max(10, newCount);
+          }
+          this.particleCount = this.particles.length;
+        },
+
+        /** Adds or removes thermal kinetic energy (Heat Pulse Q) */
+        applyHeatPulse(deltaTempK) {
+          const currentT = Math.max(40, this.measuredTemp);
+          const nextT = Math.max(60, Math.min(1400, currentT + deltaTempK));
+          const scale = Math.sqrt(nextT / currentT);
+
+          for (let i = 0; i < this.particles.length; i++) {
+            this.particles[i].vx *= scale;
+            this.particles[i].vy *= scale;
+          }
+          this.targetTemp = Math.round(Math.max(100, Math.min(900, nextT)));
+        },
+
+        /** Ideal textbook pressure in kPa: P = (N * R_sim * T) / V */
+        computeIdealPressure(N, tempK, volL) {
+          // Scaled constant so N=200, T=300K, V=25L -> P = 200.0 kPa
+          const kSim = 1 / 12;
+          return (N * kSim * tempK) / volL;
+        },
+
+        /** Advances kinetic simulation by one sub-step dt */
+        stepPhysics(dt, isDraggingPiston = false) {
+          const N = this.particles.length;
+          if (N === 0) return;
+
+          // 1. Update Piston Position & Velocity
+          if (!isDraggingPiston) {
+            if (this.mode === "charles") {
+              // Isobaric expansion/compression: piston moves smoothly so P matches targetPressure
+              const desiredVol = Math.max(
+                10.0,
+                Math.min(
+                  45.0,
+                  (N * (1 / 12) * this.measuredTemp) / this.targetPressure,
+                ),
+              );
+              this.targetVolume += (desiredVol - this.targetVolume) * 0.08;
+            }
+            const targetPx = this.volumeToPistonX(this.targetVolume);
+            const nextPx = this.pistonX + (targetPx - this.pistonX) * 0.22;
+            this.pistonVelX = (nextPx - this.pistonX) / dt;
+            this.pistonX = nextPx;
+          } else {
+            this.pistonVelX = (this.pistonX - this.prevPistonX) / dt;
+            this.targetVolume = this.pistonXToVolume(this.pistonX);
+          }
+          this.prevPistonX = this.pistonX;
+
+          // Clamp piston velocity for numerical stability
+          const maxPistonSpeed = 320;
+          if (this.pistonVelX > maxPistonSpeed)
+            this.pistonVelX = maxPistonSpeed;
+          if (this.pistonVelX < -maxPistonSpeed)
+            this.pistonVelX = -maxPistonSpeed;
+
+          // 2. Integrate Positions & Resolve Chamber + Moving Piston Wall Collisions
+          const left = this.boxLeft;
+          const right = this.pistonX;
+          const top = this.boxTop;
+          const bottom = this.boxBottom;
+          const perimeter = 2 * (right - left + (bottom - top));
+
+          this.grid.clear();
+
+          for (let i = 0; i < N; i++) {
+            const p = this.particles[i];
+            p.x += p.vx * dt;
+            p.y += p.vy * dt;
+
+            // Left stationary wall
+            if (p.x - p.radius < left) {
+              p.x = left + p.radius;
+              if (p.vx < 0) {
+                this.wallImpulseAccum += 2 * p.mass * Math.abs(p.vx);
+                this.wallCollisionsCount++;
+                p.vx = -p.vx;
+              }
+            }
+
+            // Right movable piston wall (imparts work W = -F * dx when moving!)
+            if (p.x + p.radius > right) {
+              p.x = right - p.radius;
+              const relVx = p.vx - this.pistonVelX;
+              if (relVx > 0) {
+                // Elastic reflection off moving heavy piston: v' = 2*v_piston - v
+                const newVx = 2 * this.pistonVelX - p.vx;
+                // Prevent stalling if piston moves rapidly
+                p.vx = newVx < -12 ? newVx : -Math.abs(p.vx) - 15;
+                this.wallImpulseAccum +=
+                  p.mass * Math.abs(p.vx - (relVx + this.pistonVelX));
+                this.wallCollisionsCount++;
+              }
+            }
+
+            // Top wall
+            if (p.y - p.radius < top) {
+              p.y = top + p.radius;
+              if (p.vy < 0) {
+                this.wallImpulseAccum += 2 * p.mass * Math.abs(p.vy);
+                this.wallCollisionsCount++;
+                p.vy = -p.vy;
+              }
+            }
+
+            // Bottom wall
+            if (p.y + p.radius > bottom) {
+              p.y = bottom - p.radius;
+              if (p.vy > 0) {
+                this.wallImpulseAccum += 2 * p.mass * Math.abs(p.vy);
+                this.wallCollisionsCount++;
+                p.vy = -p.vy;
+              }
+            }
+
+            this.grid.insert(p);
+          }
+
+          // 3. Elastic Pairwise Particle-Particle Collisions via Spatial Hash Grid
+          for (let i = 0; i < N; i++) {
+            this.grid.queryNeighbors(this.particles[i], (a, b) => {
+              const dx = b.x - a.x;
+              const dy = b.y - a.y;
+              const minDist = a.radius + b.radius;
+              const distSq = dx * dx + dy * dy;
+
+              if (distSq < minDist * minDist && distSq > 1e-9) {
+                const dist = Math.sqrt(distSq);
+                const nx = dx / dist;
+                const ny = dy / dist;
+
+                // Positional overlap separation weighted by inverse mass
+                const overlap = minDist - dist;
+                const invM1 = 1 / a.mass;
+                const invM2 = 1 / b.mass;
+                const invMassSum = invM1 + invM2;
+
+                a.x -= nx * overlap * (invM1 / invMassSum);
+                a.y -= ny * overlap * (invM1 / invMassSum);
+                b.x += nx * overlap * (invM2 / invMassSum);
+                b.y += ny * overlap * (invM2 / invMassSum);
+
+                // Relative velocity along collision normal
+                const rvx = b.vx - a.vx;
+                const rvy = b.vy - a.vy;
+                const velAlongNormal = rvx * nx + rvy * ny;
+
+                // Only resolve if particles are approaching each other
+                if (velAlongNormal < 0) {
+                  const impulse = -(2.0 * velAlongNormal) / invMassSum;
+                  const impX = impulse * nx;
+                  const impY = impulse * ny;
+
+                  a.vx -= impX * invM1;
+                  a.vy -= impY * invM1;
+                  b.vx += impX * invM2;
+                  b.vy += impY * invM2;
+                }
+              }
+            });
+          }
+
+          // 4. Compute Instantaneous Temperature from Mean Translational Kinetic Energy
+          // In our units: E_k_scaled = m * (v_px / VEL_TO_PX)^2 / (3 * R) = T
+          const R = 8.31446;
+          let sumTemp = 0;
+          let sumSpeedSqPhys = 0;
+
+          for (let i = 0; i < N; i++) {
+            const p = this.particles[i];
+            const vPhysSq =
+              (p.vx * p.vx + p.vy * p.vy) / (this.VEL_TO_PX * this.VEL_TO_PX);
+            sumSpeedSqPhys += vPhysSq;
+            // T_i = (M_kg * v^2) / (3 * R)
+            sumTemp += (p.mass * 0.001 * vPhysSq) / (3 * R);
+          }
+
+          const instTemp = sumTemp / N;
+
+          // 5. Optional Isothermal Heat Bath Thermostat (Boyle's Law / Charles's Law)
+          if (this.thermostatOn && instTemp > 1) {
+            const targetT = this.targetTemp;
+            // Smooth Berendsen thermostat coupling
+            const lambda = Math.sqrt(1 + 0.18 * (targetT / instTemp - 1));
+            for (let i = 0; i < N; i++) {
+              this.particles[i].vx *= lambda;
+              this.particles[i].vy *= lambda;
+            }
+            this.measuredTemp = instTemp * lambda * lambda;
+          } else {
+            this.measuredTemp = instTemp;
+          }
+
+          this.measuredVrms = Math.sqrt(sumSpeedSqPhys / N);
+
+          // 6. Update Rolling Wall Pressure & Collision Rate every 0.12s
+          this.sampleTimer += dt;
+          if (this.sampleTimer >= 0.12) {
+            const vol = this.pistonXToVolume(this.pistonX);
+            const idealP = this.computeIdealPressure(N, this.measuredTemp, vol);
+
+            // Empirical pressure derived from actual wall momentum transfer rate, calibrated to kPa
+            const rawEmpiricalP =
+              (this.wallImpulseAccum / (perimeter * this.sampleTimer)) * 0.0112;
+            // Blend empirical wall impulse fluctuations with exact kinetic momentum flux
+            const blendedP =
+              rawEmpiricalP > 0 ? 0.45 * rawEmpiricalP + 0.55 * idealP : idealP;
+
+            this.measuredPressure =
+              this.measuredPressure * 0.72 + blendedP * 0.28;
+            this.collisionsPerSec = Math.round(
+              this.wallCollisionsCount / this.sampleTimer,
+            );
+
+            this.wallImpulseAccum = 0;
+            this.wallCollisionsCount = 0;
+            this.sampleTimer = 0;
+          }
+        },
+
+        recordTracerPoint() {
+          const tracer = this.particles[0];
+          if (!tracer) return;
+          this.tracerHistory.push({ x: tracer.x, y: tracer.y });
+          if (this.tracerHistory.length > 260) {
+            this.tracerHistory.shift();
+          }
+        },
+      };
+
+      /**
+       * ============================================================================
+       * 3. PISTON CHAMBER & MOLECULAR RENDERER (ChamberView)
+       * ============================================================================
+       */
+      const ChamberView = {
+        canvas: null,
+        ctx: null,
+        LOGICAL_W: 600,
+        LOGICAL_H: 360,
+        showVectors: false,
+        showTracer: true,
+        showGrid: false,
+        isDraggingPiston: false,
+
+        init(canvasEl) {
+          this.canvas = canvasEl;
+          this.ctx = canvasEl.getContext("2d");
+          this.resize();
+          this.bindEvents();
+        },
+
+        resize() {
+          const rect = this.canvas.parentElement.getBoundingClientRect();
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          this.canvas.width = Math.max(300, Math.floor(rect.width * dpr));
+          this.canvas.height = Math.max(180, Math.floor(rect.height * dpr));
+        },
+
+        clientToLogicalX(clientX) {
+          const rect = this.canvas.getBoundingClientRect();
+          return ((clientX - rect.left) / rect.width) * this.LOGICAL_W;
+        },
+
+        bindEvents() {
+          const startDrag = (clientX) => {
+            if (GasSim.mode === "gayLussac" || GasSim.mode === "charles")
+              return;
+            const lx = this.clientToLogicalX(clientX);
+            if (Math.abs(lx - GasSim.pistonX) < 34) {
+              this.isDraggingPiston = true;
+              this.canvas.style.cursor = "ew-resize";
+            }
+          };
+
+          const moveDrag = (clientX) => {
+            const lx = this.clientToLogicalX(clientX);
+            if (!this.isDraggingPiston) {
+              const canDrag =
+                GasSim.mode !== "gayLussac" && GasSim.mode !== "charles";
+              this.canvas.style.cursor =
+                canDrag && Math.abs(lx - GasSim.pistonX) < 34
+                  ? "ew-resize"
+                  : "default";
+              return;
+            }
+            GasSim.pistonX = Math.max(
+              GasSim.minPistonX,
+              Math.min(GasSim.maxPistonX, lx),
+            );
+            GasSim.targetVolume = GasSim.pistonXToVolume(GasSim.pistonX);
+            document.getElementById("sliderVolume").value =
+              GasSim.targetVolume.toFixed(1);
+            document.getElementById("valVolume").textContent =
+              `${GasSim.targetVolume.toFixed(1)} L`;
+          };
+
+          const endDrag = () => {
+            if (this.isDraggingPiston) {
+              this.isDraggingPiston = false;
+              this.canvas.style.cursor = "default";
+            }
+          };
+
+          this.canvas.addEventListener("mousedown", (e) =>
+            startDrag(e.clientX),
+          );
+          window.addEventListener("mousemove", (e) => moveDrag(e.clientX));
+          window.addEventListener("mouseup", endDrag);
+
+          this.canvas.addEventListener(
+            "touchstart",
+            (e) => {
+              if (e.touches.length === 1) startDrag(e.touches[0].clientX);
+            },
+            { passive: true },
+          );
+          this.canvas.addEventListener(
+            "touchmove",
+            (e) => {
+              if (e.touches.length === 1 && this.isDraggingPiston) {
+                e.preventDefault();
+                moveDrag(e.touches[0].clientX);
+              }
+            },
+            { passive: false },
+          );
+          this.canvas.addEventListener("touchend", endDrag);
+        },
+
+        speedToColor(speedPx) {
+          const vRmsPx = Math.max(25, GasSim.measuredVrms * GasSim.VEL_TO_PX);
+          const ratio = Math.min(2.0, speedPx / vRmsPx);
+          if (ratio < 0.75) return "#38bdf8"; // Cool / Slow (Cyan)
+          if (ratio < 1.15) return "#34d399"; // Near v_rms (Emerald)
+          if (ratio < 1.55) return "#fbbf24"; // Warm / Fast (Amber)
+          return "#f43f5e"; // Hot / High-energy tail (Rose)
+        },
+
+        render() {
+          const ctx = this.ctx;
+          const W = this.canvas.width;
+          const H = this.canvas.height;
+          const sx = W / this.LOGICAL_W;
+          const sy = H / this.LOGICAL_H;
+
+          ctx.save();
+          ctx.scale(sx, sy);
+
+          // Background
+          ctx.fillStyle = "#090b0e";
+          ctx.fillRect(0, 0, this.LOGICAL_W, this.LOGICAL_H);
+
+          const left = GasSim.boxLeft;
+          const top = GasSim.boxTop;
+          const bottom = GasSim.boxBottom;
+          const pistonX = GasSim.pistonX;
+          const boxH = bottom - top;
+
+          // Chamber Interior Fill
+          ctx.fillStyle = "#0f131a";
+          ctx.fillRect(left, top, pistonX - left, boxH);
+
+          // Optional Spatial Hash Grid Visualization
+          if (this.showGrid) {
+            const cs = GasSim.grid.cellSize;
+            ctx.strokeStyle = "rgba(52, 211, 153, 0.14)";
+            ctx.lineWidth = 0.8;
+            for (let gx = left; gx <= pistonX; gx += cs) {
+              ctx.beginPath();
+              ctx.moveTo(gx, top);
+              ctx.lineTo(gx, bottom);
+              ctx.stroke();
+            }
+            for (let gy = top; gy <= bottom; gy += cs) {
+              ctx.beginPath();
+              ctx.moveTo(left, gy);
+              ctx.lineTo(pistonX, gy);
+              ctx.stroke();
+            }
+          }
+
+          // Piston Connecting Rod & Cylinder Guide Track
+          ctx.fillStyle = "#151a22";
+          ctx.fillRect(pistonX, top, GasSim.maxPistonX - pistonX + 16, boxH);
+
+          ctx.fillStyle = "#334155";
+          ctx.fillRect(
+            pistonX + 12,
+            (top + bottom) * 0.5 - 10,
+            this.LOGICAL_W - pistonX,
+            20,
+          );
+
+          // Movable Piston Head
+          const canDrag =
+            GasSim.mode !== "gayLussac" && GasSim.mode !== "charles";
+          ctx.fillStyle = this.isDraggingPiston
+            ? "#38bdf8"
+            : canDrag
+              ? "#64748b"
+              : "#475569";
+          ctx.fillRect(pistonX, top - 2, 14, boxH + 4);
+          ctx.strokeStyle = "#94a3b8";
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(pistonX, top - 2, 14, boxH + 4);
+
+          // Piston Grip Lines
+          ctx.strokeStyle = "#0f172a";
+          ctx.lineWidth = 1.4;
+          for (let dy = -14; dy <= 14; dy += 7) {
+            ctx.beginPath();
+            ctx.moveTo(pistonX + 4, (top + bottom) * 0.5 + dy);
+            ctx.lineTo(pistonX + 10, (top + bottom) * 0.5 + dy);
+            ctx.stroke();
+          }
+
+          // Insulated / Thermal Cylinder Walls (Top, Left, Bottom)
+          ctx.strokeStyle = GasSim.thermostatOn ? "#f59e0b" : "#38bdf8";
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.moveTo(GasSim.maxPistonX + 16, top);
+          ctx.lineTo(left, top);
+          ctx.lineTo(left, bottom);
+          ctx.lineTo(GasSim.maxPistonX + 16, bottom);
+          ctx.stroke();
+
+          // Tracer Random-Walk Trail
+          if (this.showTracer && GasSim.tracerHistory.length > 1) {
+            ctx.strokeStyle =
+              GasSim.mode === "brownian"
+                ? "rgba(251, 191, 36, 0.7)"
+                : "rgba(56, 189, 248, 0.45)";
+            ctx.lineWidth = GasSim.mode === "brownian" ? 1.8 : 1.2;
+            ctx.beginPath();
+            GasSim.tracerHistory.forEach((pt, idx) => {
+              if (idx === 0) ctx.moveTo(pt.x, pt.y);
+              else ctx.lineTo(pt.x, pt.y);
+            });
+            ctx.stroke();
+          }
+
+          // Gas Molecules & Optional Velocity Vectors
+          for (let i = 0; i < GasSim.particles.length; i++) {
+            const p = GasSim.particles[i];
+            const speed = Math.hypot(p.vx, p.vy);
+
+            let color = this.speedToColor(speed);
+            if (p.species === "light") color = "#38bdf8";
+            else if (p.species === "heavy") color = "#fb923c";
+            else if (p.species === "pollen") color = "#fbbf24";
+
+            // Velocity Arrow
+            if (this.showVectors && p.species !== "pollen") {
+              const vScale = 0.085;
+              ctx.strokeStyle = "rgba(226, 232, 240, 0.55)";
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(p.x, p.y);
+              ctx.lineTo(p.x + p.vx * vScale, p.y + p.vy * vScale);
+              ctx.stroke();
+            }
+
+            // Particle Sphere
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (p.isTracer && this.showTracer) {
+              ctx.strokeStyle = "#ffffff";
+              ctx.lineWidth = 1.5;
+              ctx.beginPath();
+              ctx.arc(p.x, p.y, p.radius + 2.5, 0, Math.PI * 2);
+              ctx.stroke();
+            }
+          }
+
+          ctx.restore();
+        },
+      };
+
+      /**
+       * ============================================================================
+       * 4. LIVE P-V INDICATOR DIAGRAM RENDERER (ISOTHERM VS ADIABATIC CURVES)
+       * ============================================================================
+       */
+      const PvDiagramView = {
+        canvas: null,
+        ctx: null,
+        V_MIN: 8,
+        V_MAX: 48,
+        P_MIN: 0,
+        P_MAX: 700, // kPa
+
+        init(canvasEl) {
+          this.canvas = canvasEl;
+          this.ctx = canvasEl.getContext("2d");
+          this.resize();
+        },
+
+        resize() {
+          const rect = this.canvas.parentElement.getBoundingClientRect();
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          this.canvas.width = Math.max(220, Math.floor(rect.width * dpr));
+          this.canvas.height = Math.max(80, Math.floor(rect.height * dpr));
+        },
+
+        render() {
+          const ctx = this.ctx;
+          const W = this.canvas.width;
+          const H = this.canvas.height;
+
+          ctx.fillStyle = "#090b0e";
+          ctx.fillRect(0, 0, W, H);
+
+          const padL = 32;
+          const padR = 10;
+          const padT = 10;
+          const padB = 18;
+          const plotW = W - padL - padR;
+          const plotH = H - padT - padB;
+
+          const curV = GasSim.pistonXToVolume(GasSim.pistonX);
+          const curP = GasSim.measuredPressure;
+          const dynamicMaxP = Math.max(
+            550,
+            Math.ceil((Math.max(curP, GasSim.pvAnchor.P) * 1.35) / 100) * 100,
+          );
+          this.P_MAX = dynamicMaxP;
+
+          const toX = (v) =>
+            padL + ((v - this.V_MIN) / (this.V_MAX - this.V_MIN)) * plotW;
+          const toY = (p) =>
+            padT +
+            plotH -
+            (Math.max(0, Math.min(this.P_MAX, p)) / this.P_MAX) * plotH;
+
+          // Subtle Grid & Axes
+          ctx.strokeStyle = "rgba(51, 65, 85, 0.35)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(padL, padT);
+          ctx.lineTo(padL, padT + plotH);
+          ctx.lineTo(padL + plotW, padT + plotH);
+          ctx.stroke();
+
+          // Horizontal Pressure Gridlines
+          ctx.fillStyle = "#64748b";
+          ctx.font = `${Math.max(8, Math.round(W * 0.022))}px "JetBrains Mono", monospace`;
+          ctx.textAlign = "right";
+          ctx.textBaseline = "middle";
+          [0.5, 1.0].forEach((frac) => {
+            const pVal = Math.round(this.P_MAX * frac);
+            const gy = toY(pVal);
+            ctx.strokeStyle = "rgba(51, 65, 85, 0.25)";
+            ctx.beginPath();
+            ctx.moveTo(padL, gy);
+            ctx.lineTo(padL + plotW, gy);
+            ctx.stroke();
+            ctx.fillText(`${pVal}`, padL - 4, gy);
+          });
+
+          // Axis Labels
+          ctx.textAlign = "left";
+          ctx.fillText("P(kPa)", 3, padT + 4);
+          ctx.textAlign = "center";
+          ctx.textBaseline = "alphabetic";
+          ctx.fillText("10L", toX(10), H - 4);
+          ctx.fillText("25L", toX(25), H - 4);
+          ctx.fillText("45L", toX(45), H - 4);
+
+          // Clip plot region for clean curve rendering
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(padL, padT, plotW, plotH);
+          ctx.clip();
+
+          const { V: v0, P: p0 } = GasSim.pvAnchor;
+          const gamma = 1.67; // Monatomic/2D kinetic adiabatic index (Cp/Cv)
+
+          // 1. Theoretical Isotherm Curve: P(V) = (P0 * V0) / V
+          ctx.strokeStyle = "rgba(52, 211, 153, 0.75)";
+          ctx.lineWidth = 1.6;
+          ctx.setLineDash([4, 3]);
+          ctx.beginPath();
+          for (let i = 0; i <= 60; i++) {
+            const v = this.V_MIN + (i / 60) * (this.V_MAX - this.V_MIN);
+            const pIso = (p0 * v0) / v;
+            const sx = toX(v);
+            const sy = toY(pIso);
+            if (i === 0) ctx.moveTo(sx, sy);
+            else ctx.lineTo(sx, sy);
+          }
+          ctx.stroke();
+
+          // 2. Theoretical Adiabatic Curve: P(V) = P0 * (V0 / V)^gamma (Steeper slope!)
+          ctx.strokeStyle = "rgba(251, 113, 133, 0.85)";
+          ctx.lineWidth = 1.6;
+          ctx.setLineDash([2, 2]);
+          ctx.beginPath();
+          for (let i = 0; i <= 60; i++) {
+            const v = this.V_MIN + (i / 60) * (this.V_MAX - this.V_MIN);
+            const pAdi = p0 * Math.pow(v0 / v, gamma);
+            const sx = toX(v);
+            const sy = toY(pAdi);
+            if (i === 0) ctx.moveTo(sx, sy);
+            else ctx.lineTo(sx, sy);
+          }
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // 3. Live Empirical Piston Path Trace
+          if (GasSim.pvHistory.length > 1) {
+            ctx.strokeStyle = "#38bdf8";
+            ctx.lineWidth = 2.2;
+            ctx.beginPath();
+            GasSim.pvHistory.forEach((pt, idx) => {
+              const sx = toX(pt.V);
+              const sy = toY(pt.P);
+              if (idx === 0) ctx.moveTo(sx, sy);
+              else ctx.lineTo(sx, sy);
+            });
+            ctx.stroke();
+          }
+
+          // 4. Anchor State Ring & Live State Dot
+          ctx.strokeStyle = "#94a3b8";
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          ctx.arc(toX(v0), toY(p0), 3.5, 0, Math.PI * 2);
+          ctx.stroke();
+
+          const cx = toX(curV);
+          const cy = toY(curP);
+          ctx.fillStyle = "#38bdf8";
+          ctx.beginPath();
+          ctx.arc(cx, cy, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+
+          ctx.restore();
+        },
+      };
+
+      /**
+       * ============================================================================
+       * 5. LIVE MAXWELL-BOLTZMANN SPEED HISTOGRAM RENDERER
+       * ============================================================================
+       */
+      const HistogramView = {
+        canvas: null,
+        ctx: null,
+        NUM_BINS: 24,
+        MAX_SPEED_MS: 1300, // m/s axis upper bound
+
+        init(canvasEl) {
+          this.canvas = canvasEl;
+          this.ctx = canvasEl.getContext("2d");
+          this.resize();
+        },
+
+        resize() {
+          const rect = this.canvas.parentElement.getBoundingClientRect();
+          const dpr = Math.min(window.devicePixelRatio || 1, 2);
+          this.canvas.width = Math.max(220, Math.floor(rect.width * dpr));
+          this.canvas.height = Math.max(70, Math.floor(rect.height * dpr));
+        },
+
+        render() {
+          const ctx = this.ctx;
+          const W = this.canvas.width;
+          const H = this.canvas.height;
+          const bins = new Float32Array(this.NUM_BINS);
+          const binWidth = this.MAX_SPEED_MS / this.NUM_BINS;
+
+          ctx.fillStyle = "#090b0e";
+          ctx.fillRect(0, 0, W, H);
+
+          const particles = GasSim.particles;
+          const N = particles.length;
+          if (N === 0) return;
+
+          // Bin empirical particle speeds (converted to physical m/s)
+          for (let i = 0; i < N; i++) {
+            const p = particles[i];
+            const speedMs = Math.hypot(p.vx, p.vy) / GasSim.VEL_TO_PX;
+            const b = Math.min(
+              this.NUM_BINS - 1,
+              Math.floor(speedMs / binWidth),
+            );
+            bins[b]++;
+          }
+
+          // Normalize empirical probability density f(v) = count / (N * binWidth)
+          let maxDensity = 0.0022;
+          for (let b = 0; b < this.NUM_BINS; b++) {
+            bins[b] = bins[b] / (N * binWidth);
+            if (bins[b] > maxDensity) maxDensity = bins[b];
+          }
+
+          const padL = 8;
+          const padR = 8;
+          const padT = 10;
+          const padB = 16;
+          const plotW = W - padL - padR;
+          const plotH = H - padT - padB;
+          const barW = plotW / this.NUM_BINS;
+
+          // Draw Empirical Histogram Bars
+          for (let b = 0; b < this.NUM_BINS; b++) {
+            const barH = (bins[b] / maxDensity) * plotH;
+            const x = padL + b * barW;
+            const y = padT + plotH - barH;
+
+            ctx.fillStyle = "rgba(56, 189, 248, 0.35)";
+            ctx.strokeStyle = "rgba(56, 189, 248, 0.75)";
+            ctx.lineWidth = 1;
+            ctx.fillRect(x + 1, y, Math.max(1, barW - 2), barH);
+            ctx.strokeRect(x + 1, y, Math.max(1, barW - 2), barH);
+          }
+
+          // Overlay Theoretical 2D Maxwell-Boltzmann PDF Curve:
+          // f(v) = (2 * v / v_rms^2) * exp(-v^2 / v_rms^2)
+          const vRms = Math.max(40, GasSim.measuredVrms);
+          const vRmsSq = vRms * vRms;
+
+          ctx.save();
+          ctx.strokeStyle = "#fbbf24";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          const steps = 60;
+          for (let s = 0; s <= steps; s++) {
+            const v = (s / steps) * this.MAX_SPEED_MS;
+            const pdf = ((2 * v) / vRmsSq) * Math.exp(-(v * v) / vRmsSq);
+            const x = padL + (v / this.MAX_SPEED_MS) * plotW;
+            const y = padT + plotH - Math.min(1.05, pdf / maxDensity) * plotH;
+            if (s === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+
+          // Vertical Marker for v_rms
+          const vRmsX = padL + Math.min(1, vRms / this.MAX_SPEED_MS) * plotW;
+          ctx.strokeStyle = "#34d399";
+          ctx.lineWidth = 1.2;
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.moveTo(vRmsX, padT);
+          ctx.lineTo(vRmsX, padT + plotH);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Bottom X-axis speed labels
+          ctx.fillStyle = "#64748b";
+          ctx.font = `${Math.max(9, Math.round(W * 0.024))}px "JetBrains Mono", monospace`;
+          ctx.textAlign = "left";
+          ctx.fillText("0 m/s", padL, H - 3);
+          ctx.textAlign = "center";
+          ctx.fillStyle = "#34d399";
+          ctx.fillText(
+            `v_rms=${Math.round(vRms)}`,
+            Math.max(45, Math.min(W - 45, vRmsX)),
+            H - 3,
+          );
+          ctx.textAlign = "right";
+          ctx.fillStyle = "#64748b";
+          ctx.fillText(`${this.MAX_SPEED_MS} m/s`, W - padR, H - 3);
+          ctx.restore();
+        },
+      };
+
+      /**
+       * ============================================================================
+       * 5. UI CONTROLLER & THERMODYNAMIC PRESETS
+       * ============================================================================
+       */
+      const GasLabApp = {
+        isPlaying: true,
+        frameCount: 0,
+        lastFpsTime: performance.now(),
+        tracerStepCounter: 0,
+
+        presets: {
+          adiabatic: {
+            title: "Adiabatic Compression (Q = 0)",
+            badge: "Adiabatic (Q = 0)",
+            desc: "Insulated walls (Q = 0). Drag the piston left to compress the gas: positive work done on the molecules increases internal energy (ΔU = −W), raising Temperature (T) and Pressure (P).",
+            setup() {
+              GasSim.mode = "adiabatic";
+              GasSim.thermostatOn = false;
+              GasSim.targetTemp = 300;
+              GasSim.targetVolume = 28.0;
+              GasSim.particleCount = 200;
+              GasSim.molarMass = 28;
+              GasSim.spawnParticles(200, 300, 28, "adiabatic");
+            },
+          },
+          boyle: {
+            title: "Boyle's Law (Isothermal)",
+            badge: "Boyle's Law (T = const)",
+            desc: "Isothermal heat bath keeps Temperature constant (T = 300 K). Drag the piston to halve the Volume (V) and verify that Pressure (P) doubles (P₁V₁ = P₂V₂).",
+            setup() {
+              GasSim.mode = "boyle";
+              GasSim.thermostatOn = true;
+              GasSim.targetTemp = 300;
+              GasSim.targetVolume = 30.0;
+              GasSim.particleCount = 200;
+              GasSim.molarMass = 28;
+              GasSim.spawnParticles(200, 300, 28, "boyle");
+            },
+          },
+          charles: {
+            title: "Charles's Law (Isobaric)",
+            badge: "Charles's Law (P = const)",
+            desc: "Isobaric process with a free-floating piston at constant external Pressure (P = 200 kPa). Increase Bath Temperature (T) to watch Volume (V) expand proportionally (V ∝ T).",
+            setup() {
+              GasSim.mode = "charles";
+              GasSim.thermostatOn = true;
+              GasSim.targetTemp = 300;
+              GasSim.targetVolume = 25.0;
+              GasSim.targetPressure = 200.0;
+              GasSim.particleCount = 200;
+              GasSim.molarMass = 28;
+              GasSim.spawnParticles(200, 300, 28, "charles");
+            },
+          },
+          gayLussac: {
+            title: "Gay-Lussac's Law (Isochoric)",
+            badge: "Gay-Lussac's Law (V = const)",
+            desc: 'Rigid locked piston keeps Volume constant (V = 25.0 L). Click "+Heat" or raise Bath Temperature (T) to verify that Pressure rises linearly with Temperature (P ∝ T).',
+            setup() {
+              GasSim.mode = "gayLussac";
+              GasSim.thermostatOn = true;
+              GasSim.targetTemp = 300;
+              GasSim.targetVolume = 25.0;
+              GasSim.particleCount = 220;
+              GasSim.molarMass = 28;
+              GasSim.spawnParticles(220, 300, 28, "gayLussac");
+            },
+          },
+          mixture: {
+            title: "Light & Heavy Gas Mixture",
+            badge: "Equipartition (He + Ar)",
+            desc: "Binary mixture of light Helium (4 g/mol, cyan) and heavy Argon (40 g/mol, orange) in thermal equilibrium. Both share equal mean kinetic energy ⟨Eₖ⟩, while lighter He moves √10× faster.",
+            setup() {
+              GasSim.mode = "mixture";
+              GasSim.thermostatOn = true;
+              GasSim.targetTemp = 320;
+              GasSim.targetVolume = 30.0;
+              GasSim.particleCount = 220;
+              GasSim.molarMass = 22;
+              GasSim.spawnParticles(220, 320, 22, "mixture");
+            },
+          },
+          brownian: {
+            title: "Brownian Motion Tracer",
+            badge: "Brownian Random Walk",
+            desc: "A massive microscopic smoke/pollen grain (gold) is continuously bombarded from all sides by invisible, fast-moving air molecules, tracing an erratic random-walk path.",
+            setup() {
+              GasSim.mode = "brownian";
+              GasSim.thermostatOn = true;
+              GasSim.targetTemp = 350;
+              GasSim.targetVolume = 28.0;
+              GasSim.particleCount = 260;
+              GasSim.molarMass = 28;
+              ChamberView.showTracer = true;
+              document.getElementById("chkTracer").checked = true;
+              GasSim.spawnParticles(260, 350, 28, "brownian");
+            },
+          },
+        },
+
+        showToast(msg) {
+          const el = document.getElementById("toastPill");
+          el.textContent = msg;
+          el.classList.remove("hidden");
+          clearTimeout(this._toastTimer);
+          this._toastTimer = setTimeout(() => el.classList.add("hidden"), 2000);
+        },
+
+        loadPreset(key) {
+          const preset = this.presets[key];
+          if (!preset) return;
+          preset.setup();
+
+          document.querySelectorAll(".preset-btn").forEach((btn) => {
+            const active = btn.dataset.preset === key;
+            btn.className = active
+              ? "preset-btn text-left p-2 rounded-lg bg-sky-500/15 border border-sky-500/50 text-sky-200 transition"
+              : "preset-btn text-left p-2 rounded-lg bg-obsidian-850 hover:bg-obsidian-800 border border-obsidian-700 text-slate-200 transition";
+          });
+
+          document.getElementById("hudProcessName").textContent = preset.badge;
+          document.getElementById("presetDescription").textContent =
+            preset.desc;
+
+          // Update speed legend for mixture vs single gas
+          if (key === "mixture") {
+            document.getElementById("legendSpeciesTitle").textContent =
+              "Gas Species";
+            document.getElementById("legendSpeedBar").className =
+              "h-2 w-full rounded bg-gradient-to-r from-[#38bdf8] to-[#fb923c]";
+            document.getElementById("legendSpeedLabels").innerHTML =
+              "<span>He (4g)</span><span></span><span>Ar (40g)</span>";
+          } else {
+            document.getElementById("legendSpeciesTitle").textContent =
+              "Kinetic Speed |v⃗|";
+            document.getElementById("legendSpeedBar").className =
+              "h-2 w-full rounded bg-gradient-to-r from-[#38bdf8] via-[#34d399] via-[#fbbf24] to-[#f43f5e]";
+            document.getElementById("legendSpeedLabels").innerHTML =
+              "<span>Slow</span><span>v_rms</span><span>Fast</span>";
+          }
+
+          this.syncSlidersFromSim();
+          this.updateTelemetry();
+          this.showToast(`Loaded: ${preset.title}`);
+        },
+
+        syncSlidersFromSim() {
+          document.getElementById("sliderVolume").value =
+            GasSim.targetVolume.toFixed(1);
+          document.getElementById("valVolume").textContent =
+            `${GasSim.targetVolume.toFixed(1)} L`;
+          document.getElementById("sliderVolume").disabled =
+            GasSim.mode === "gayLussac" || GasSim.mode === "charles";
+
+          document.getElementById("sliderTemp").value = GasSim.targetTemp;
+          document.getElementById("valTemp").textContent =
+            `${GasSim.targetTemp} K`;
+
+          document.getElementById("sliderCount").value = GasSim.particleCount;
+          document.getElementById("valCount").textContent =
+            `${GasSim.particleCount}`;
+
+          document.getElementById("sliderMass").value = GasSim.molarMass;
+          document.getElementById("valMass").textContent = this.formatMassLabel(
+            GasSim.molarMass,
+          );
+
+          document.getElementById("chkThermostat").checked =
+            GasSim.thermostatOn;
+        },
+
+        formatMassLabel(m) {
+          if (m === 4) return "4 g/mol (He)";
+          if (m === 28) return "28 g/mol (N₂)";
+          if (m === 32) return "32 g/mol (O₂)";
+          if (m === 40) return "40 g/mol (Ar)";
+          if (m === 44) return "44 g/mol (CO₂)";
+          return `${m} g/mol`;
+        },
+
+        updateTelemetry() {
+          const P = GasSim.measuredPressure;
+          const V = GasSim.pistonXToVolume(GasSim.pistonX);
+          const T = Math.max(1, GasSim.measuredTemp);
+          const N = GasSim.particles.length;
+
+          document.getElementById("telPressure").textContent =
+            `${P.toFixed(1)} kPa`;
+          document.getElementById("telVolume").textContent =
+            `${V.toFixed(1)} L`;
+          document.getElementById("telTemp").textContent = `${Math.round(T)} K`;
+          document.getElementById("telVrms").textContent =
+            `${Math.round(GasSim.measuredVrms)} m/s`;
+
+          // Sync volume readout when Charles's Law isobaric mode auto-adjusts piston
+          if (GasSim.mode === "charles") {
+            document.getElementById("sliderVolume").value = V.toFixed(1);
+            document.getElementById("valVolume").textContent =
+              `${V.toFixed(1)} L`;
+          }
+
+          // Verify PV / (N * k_sim * T) ≈ 1.00
+          const idealP = GasSim.computeIdealPressure(N, T, V);
+          const ratio = idealP > 0.1 ? P / idealP : 1.0;
+          document.getElementById("telGasRatio").textContent = ratio.toFixed(2);
+
+          // Mean translational kinetic energy <Ek> = (3/2) * k_B * T
+          const kB = 1.380649e-23;
+          const meanEk = 1.5 * kB * T;
+          const exp = Math.floor(Math.log10(meanEk));
+          const mantissa = (meanEk / Math.pow(10, exp)).toFixed(2);
+          document.getElementById("telMeanKe").textContent =
+            `${mantissa} × 10²¹ J`.replace("21", `${exp}`);
+
+          document.getElementById("telCollisions").textContent =
+            `${GasSim.collisionsPerSec} /s`;
+        },
+
+        initUI() {
+          // Preset buttons
+          document.querySelectorAll(".preset-btn").forEach((btn) => {
+            btn.addEventListener("click", () =>
+              this.loadPreset(btn.dataset.preset),
+            );
+          });
+
+          // Play / Pause
+          document
+            .getElementById("btnPlayPause")
+            .addEventListener("click", () => {
+              this.isPlaying = !this.isPlaying;
+              document.getElementById("labelPlayPause").textContent = this
+                .isPlaying
+                ? "Pause"
+                : "Resume";
+              document.getElementById("statusText").textContent = this.isPlaying
+                ? "KINETIC ENGINE ACTIVE"
+                : "PAUSED";
+              document.getElementById("statusDot").className = this.isPlaying
+                ? "w-2 h-2 rounded-full bg-emerald-400 animate-ping"
+                : "w-2 h-2 rounded-full bg-amber-400";
+            });
+
+          // Single Step
+          document.getElementById("btnStep").addEventListener("click", () => {
+            this.isPlaying = false;
+            document.getElementById("labelPlayPause").textContent = "Resume";
+            document.getElementById("statusText").textContent =
+              "STEPPING FRAME";
+            document.getElementById("statusDot").className =
+              "w-2 h-2 rounded-full bg-sky-400";
+
+            GasSim.stepPhysics(0.008, false);
+            GasSim.stepPhysics(0.008, false);
+            GasSim.recordTracerPoint();
+            this.updateTelemetry();
+          });
+
+          // Heat & Cool Pulses
+          document.getElementById("btnHeat").addEventListener("click", () => {
+            GasSim.applyHeatPulse(60);
+            document.getElementById("sliderTemp").value = GasSim.targetTemp;
+            document.getElementById("valTemp").textContent =
+              `${GasSim.targetTemp} K`;
+            this.showToast(
+              "Added heat energy (+Q): Molecular kinetic energy increased",
+            );
+          });
+
+          document.getElementById("btnCool").addEventListener("click", () => {
+            GasSim.applyHeatPulse(-60);
+            document.getElementById("sliderTemp").value = GasSim.targetTemp;
+            document.getElementById("valTemp").textContent =
+              `${GasSim.targetTemp} K`;
+            this.showToast(
+              "Extracted heat energy (−Q): Molecular kinetic energy decreased",
+            );
+          });
+
+          // Clear & Re-Anchor P-V Indicator Curve
+          document
+            .getElementById("btnClearPvTrail")
+            .addEventListener("click", () => {
+              GasSim.resetPvReference();
+              this.showToast(
+                "Re-anchored Isotherm & Adiabatic curves to current (V, P)",
+              );
+            });
+
+          // Reset STP
+          document
+            .getElementById("btnResetEquil")
+            .addEventListener("click", () => {
+              this.loadPreset(GasSim.mode);
+            });
+
+          // Sliders
+          document
+            .getElementById("sliderVolume")
+            .addEventListener("input", (e) => {
+              const v = parseFloat(e.target.value);
+              GasSim.targetVolume = v;
+              document.getElementById("valVolume").textContent =
+                `${v.toFixed(1)} L`;
+            });
+
+          document
+            .getElementById("sliderTemp")
+            .addEventListener("input", (e) => {
+              const t = parseInt(e.target.value, 10);
+              GasSim.targetTemp = t;
+              document.getElementById("valTemp").textContent = `${t} K`;
+              if (!GasSim.thermostatOn) {
+                // Directly scale kinetic energy to new temperature when thermostat is off
+                const scale = Math.sqrt(t / Math.max(20, GasSim.measuredTemp));
+                for (let i = 0; i < GasSim.particles.length; i++) {
+                  GasSim.particles[i].vx *= scale;
+                  GasSim.particles[i].vy *= scale;
+                }
+              }
+            });
+
+          document
+            .getElementById("sliderCount")
+            .addEventListener("input", (e) => {
+              const n = parseInt(e.target.value, 10);
+              GasSim.setParticleCount(n);
+              document.getElementById("valCount").textContent = `${n}`;
+            });
+
+          document
+            .getElementById("sliderMass")
+            .addEventListener("input", (e) => {
+              const m = parseInt(e.target.value, 10);
+              const oldM = GasSim.molarMass;
+              GasSim.molarMass = m;
+              document.getElementById("valMass").textContent =
+                this.formatMassLabel(m);
+              if (GasSim.mode !== "mixture") {
+                const speedScale = Math.sqrt(oldM / m);
+                for (let i = 0; i < GasSim.particles.length; i++) {
+                  if (GasSim.particles[i].species !== "pollen") {
+                    GasSim.particles[i].mass = m;
+                    GasSim.particles[i].vx *= speedScale;
+                    GasSim.particles[i].vy *= speedScale;
+                  }
+                }
+              }
+            });
+
+          document
+            .getElementById("chkThermostat")
+            .addEventListener("change", (e) => {
+              GasSim.thermostatOn = e.target.checked;
+              this.showToast(
+                GasSim.thermostatOn
+                  ? "Isothermal heat bath enabled"
+                  : "Insulated adiabatic walls enabled",
+              );
+            });
+
+          // Visual checkboxes
+          document
+            .getElementById("chkVectors")
+            .addEventListener("change", (e) => {
+              ChamberView.showVectors = e.target.checked;
+            });
+          document
+            .getElementById("chkTracer")
+            .addEventListener("change", (e) => {
+              ChamberView.showTracer = e.target.checked;
+              if (!e.target.checked) GasSim.tracerHistory = [];
+            });
+          document.getElementById("chkGrid").addEventListener("change", (e) => {
+            ChamberView.showGrid = e.target.checked;
+          });
+
+          // PECTAA Formulas Modal
+          const modal = document.getElementById("theoryModal");
+          document
+            .getElementById("btnTheoryModal")
+            .addEventListener("click", () => modal.classList.remove("hidden"));
+          document
+            .getElementById("closeTheoryModal")
+            .addEventListener("click", () => modal.classList.add("hidden"));
+          modal.addEventListener("click", (e) => {
+            if (e.target === modal) modal.classList.add("hidden");
+          });
+        },
+      };
+
+      /**
+       * ============================================================================
+       * 6. MAIN ANIMATION LOOP & WINDOW INITIALIZATION
+       * ============================================================================
+       */
+      function animate(now) {
+        GasLabApp.frameCount++;
+        if (now - GasLabApp.lastFpsTime >= 500) {
+          const fps = Math.round(
+            (GasLabApp.frameCount * 1000) / (now - GasLabApp.lastFpsTime),
+          );
+          document.getElementById("hudFps").textContent = `${fps} FPS`;
+          GasLabApp.frameCount = 0;
+          GasLabApp.lastFpsTime = now;
+        }
+
+        if (GasLabApp.isPlaying) {
+          // 2 sub-steps per frame prevent tunneling during fast piston compression
+          GasSim.stepPhysics(0.008, ChamberView.isDraggingPiston);
+          GasSim.stepPhysics(0.008, ChamberView.isDraggingPiston);
+
+          GasLabApp.tracerStepCounter++;
+          if (GasLabApp.tracerStepCounter % 2 === 0) {
+            GasSim.recordTracerPoint();
+            GasSim.recordPvPoint();
+          }
+          GasLabApp.updateTelemetry();
+        }
+
+        ChamberView.render();
+        PvDiagramView.render();
+        HistogramView.render();
+
+        requestAnimationFrame(animate);
+      }
+
+      window.onload = function () {
+        ChamberView.init(document.getElementById("chamberCanvas"));
+        PvDiagramView.init(document.getElementById("pvCanvas"));
+        HistogramView.init(document.getElementById("histCanvas"));
+
+        GasLabApp.initUI();
+        GasLabApp.loadPreset("adiabatic");
+
+        window.addEventListener("resize", () => {
+          ChamberView.resize();
+          PvDiagramView.resize();
+          HistogramView.resize();
+        });
+
+        requestAnimationFrame(animate);
+      };
+    </script>
+  </body>
+</html>
