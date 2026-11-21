@@ -74,7 +74,7 @@ No build tools, bundlers, or external dependencies are required.
 1. **Clone the repository:**
 
    ```
-   git clone https://github.com/<your-username>/ideal-gas-kinetic-theory-lab.git
+   git clone https://github.com/zaindev210/ideal-gas-kinetic-theory-lab.git
    cd ideal-gas-kinetic-theory-lab
 
    ```
@@ -82,10 +82,8 @@ No build tools, bundlers, or external dependencies are required.
 2. **Rename entry file & run locally:**
    Rename `ideal-gas.html` to `index.html` and open it directly in any modern browser.
 
-3. **Deploy to GitHub Pages:**
-   Navigate to **Settings → Pages**, select the `main` branch and `/ (root)` folder, and click **Save**.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Physics & Algorithms:** Vanilla JavaScript (ES6+ Spatial Hash Grid & Impulse Collision Solver)
 
